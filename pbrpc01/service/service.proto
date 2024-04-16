@@ -3,7 +3,7 @@ syntax = "proto3";
 package hello;
 
 option go_package = "mocro/pbrpc01/service";
-
+//protoc -I ./service  --go_out=./service --go_opt=module="mocro/pbrpc01/service" service/service.proto ;
 message Request{
   string value = 1;
 }

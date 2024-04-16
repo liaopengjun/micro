@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package hello;
+option go_package = "micro/grpc01/service";
+
+message Request{
+  string value = 1;
+}
+message Response{
+  string value = 1;
+}
+
+//protoc -I . \
+//--go_out=./grpc01/service \
+//--go_opt=module="micro/grpc01/service" \
+//--go-grpc_out=./grpc01/service \
+//--go-grpc_opt=module="micro/grpc01/service" \
+//./grpc01/service/service.proto
+
+// The HelloService service definition
+// service 关键字
+// HelloService 服务名称 对应接口的名称
+// service服务会对应.pb.go文件里interface,里面的rpc对应接口中的函数
+service HelloService{
+  rpc Hello (Request) returns (Response){}
+  rpc Channel(stream Request) returns (stream Response) {}
+}

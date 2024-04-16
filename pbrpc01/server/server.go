@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"micro/btrpc01/service"
+	"micro/pbrpc01/service"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
