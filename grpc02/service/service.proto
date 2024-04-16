@@ -19,7 +19,6 @@ message EchoResponse {
   string  message = 1;
 }
 
-
 //protoc -I . \
 //--go_out=./grpc02/service \
 //--go_opt=module="micro/grpc02/service" \
