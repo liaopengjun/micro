@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 	"micro/grpc03/service"
 	"net"
@@ -34,15 +35,59 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 	return m, err
 }
 
+type wrappedStream struct {
+	grpc.ServerStream
+}
+
+func newWrappedStream(s grpc.ServerStream) grpc.ServerStream {
+	return &wrappedStream{s}
+}
+
+func (w *wrappedStream) RecvMsg(m interface{}) error {
+	logger("Receive a message (Type: %T) at %s", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.RecvMsg(m)
+}
+
+func (w *wrappedStream) SendMsg(m interface{}) error {
+	logger("Send a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.SendMsg(m)
+}
+
+func streamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	// 包装 grpc.ServerStream 以替换 RecvMsg SendMsg这两个方法。
+	err := handler(srv, newWrappedStream(ss))
+	if err != nil {
+		logger("RPC failed with error %v", err)
+	}
+	return err
+}
+func (s *server) BidirectionalStreamingEcho(stream service.Echo_BidirectionalStreamingEchoServer) error {
+	for {
+		in, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			fmt.Printf("server: error receiving from stream: %v\n", err)
+			return err
+		}
+		fmt.Printf("bidi echoing message %q\n", in.Message)
+		err = stream.Send(&service.EchoResponse{Message: in.Message})
+		if err != nil {
+			fmt.Printf("server: error send to stream: %v\n", err)
+		}
+	}
+}
+
 func main() {
 
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":1234")
 	if err != nil {
 		log.Println("failed to listen:", err)
 		return
 	}
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
+	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor), grpc.StreamInterceptor(streamInterceptor))
 	service.RegisterEchoServer(s, new(server))
 	s.Serve(lis)
 }
