@@ -87,7 +87,6 @@ func main() {
 		log.Println("failed to listen:", err)
 		return
 	}
-
 	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor), grpc.StreamInterceptor(streamInterceptor))
 	service.RegisterEchoServer(s, new(server))
 	s.Serve(lis)
