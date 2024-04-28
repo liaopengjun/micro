@@ -102,7 +102,6 @@ func main() {
 	defer conn.Close()
 
 	client := service.NewEchoClient(conn)
-	//callUnaryEcho(client, "hello world")
+	//callUnaryEcho(client, "hello world1")
 	callBidiStreamingEcho(client)
-
 }

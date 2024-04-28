@@ -21,8 +21,9 @@ func logger(format string, a ...interface{}) {
 }
 
 func (s *server) UnaryEcho(ctx context.Context, in *service.EchoRequest) (*service.EchoResponse, error) {
-	fmt.Printf("unary echoing message %q\n", in.Message)
-	return &service.EchoResponse{Message: in.Message}, nil
+	message := in.Message + "测试"
+	fmt.Printf("unary echoing message %q\n", message)
+	return &service.EchoResponse{Message: message}, nil
 }
 
 // unaryInterceptor 一元拦截器：记录请求日志
